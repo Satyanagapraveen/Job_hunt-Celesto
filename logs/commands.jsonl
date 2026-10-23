@@ -1,0 +1,6 @@
+{"ts": "2026-10-23T06:39:02.374272+00:00", "sandbox_name": "sbx-job5xzvobwy", "command": "echo ready", "decision": "allow", "execution_target": "celesto_sandbox"}
+{"ts": "2026-10-23T06:39:04.522736+00:00", "sandbox_name": "sbx-job5xzvobwy", "command": "uname -r && echo lifecycle_success_ok", "decision": "allow", "execution_target": "celesto_sandbox"}
+{"ts": "2026-10-23T06:39:27.746057+00:00", "sandbox_name": "sbx-job03r3eqi2", "command": "echo ready", "decision": "allow", "execution_target": "celesto_sandbox"}
+{"ts": "2026-10-23T06:39:29.842785+00:00", "sandbox_name": "sbx-job03r3eqi2", "command": "rm -rf /", "decision": "block", "execution_target": "celesto_sandbox"}
+{"ts": "2026-10-23T06:39:44.712140+00:00", "sandbox_name": "sbx-jobzpfibbfx", "command": "echo ready", "decision": "allow", "execution_target": "celesto_sandbox"}
+{"ts": "2026-10-23T06:39:49.821856+00:00", "sandbox_name": "sbx-jobzpfibbfx", "command": "echo before_interrupt", "decision": "allow", "execution_target": "celesto_sandbox"}
