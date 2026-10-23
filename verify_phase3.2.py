@@ -22,12 +22,11 @@ capabilities_report = {
 cap_path = pathlib.Path("reports/capabilities.json")
 cap_path.write_text(json.dumps(capabilities_report, indent=2) + "\n", encoding="utf-8")
 
-# Verify Core Requirement 5 constraints
 data = json.loads(cap_path.read_text())
 assert len(data["capabilities"]) >= 2
 for c in data["capabilities"]:
-    assert len(c["why"]) >= 80, f"why too short for {c['id']}"
-    assert pathlib.Path(c["evidence_path"]).exists(), f"missing evidence {c['evidence_path']}"
+    assert len(c["why"]) >= 80, f"why too short for {c["id"]}"
+    assert pathlib.Path(c["evidence_path"]).exists(), f"missing evidence {c["evidence_path"]}"
 
 print("PHASE 3.2 VERIFICATION PASSED! Evidence files created:")
 print("--- applications_tracker.csv ---")

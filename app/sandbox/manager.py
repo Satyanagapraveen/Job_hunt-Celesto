@@ -1,7 +1,10 @@
 from dataclasses import dataclass
+import json
+import os
 import secrets
 import signal
 import string
+import subprocess
 import time
 from typing import Callable, Optional
 
@@ -17,6 +20,7 @@ from app.sandbox.safety import (
 )
 from app.services_write import create_or_update_run
 
+os.environ["CELESTO_DISABLE_VERSION_CHECK"] = "1"
 MICRO_HOURLY_USD = 0.015
 
 
@@ -32,12 +36,41 @@ class CommandResult:
 
 
 def generate_sandbox_name(prefix: str = "job") -> str:
-    clean_prefix = "".join(c for c in prefix.lower() if c in string.ascii_lowercase + string.digits)[:4]
+    clean_prefix = "".join(
+        c for c in prefix.lower() if c in string.ascii_lowercase + string.digits
+    )[:4]
     alphabet = string.ascii_lowercase + string.digits
     suffix = "".join(secrets.choice(alphabet) for _ in range(8))
     name = f"sbx-{clean_prefix}{suffix}"
     validate_sandbox_name(name)
     return name
+
+
+def purge_all_cloud_computers() -> list[str]:
+    deleted_ids = []
+    try:
+        res = subprocess.run(
+            ["celesto", "computer", "list", "--cloud", "--all", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+        if res.stdout:
+            data = json.loads(res.stdout)
+            computers = data.get("data", {}).get("computers", [])
+            for comp in computers:
+                cid = comp.get("computer_id")
+                if cid:
+                    subprocess.run(
+                        ["celesto", "computer", "delete", cid, "--cloud", "--json"],
+                        capture_output=True,
+                        text=True,
+                        timeout=20,
+                    )
+                    deleted_ids.append(cid)
+    except Exception:
+        pass
+    return deleted_ids
 
 
 class CelestoSandboxSession:
@@ -48,6 +81,7 @@ class CelestoSandboxSession:
         problem_id: str = "job-hunt-desk",
         provider: str = CELESTO_PROVIDER,
         ledger_callback: Optional[Callable[[RunCreateRequest], dict]] = None,
+        auto_purge_before_start: bool = True,
     ):
         self.sandbox_name = sandbox_name or generate_sandbox_name("job")
         validate_sandbox_name(self.sandbox_name)
@@ -55,6 +89,7 @@ class CelestoSandboxSession:
         self.problem_id = problem_id
         self.provider = provider
         self.ledger_callback = ledger_callback or self._default_ledger_write
+        self.auto_purge_before_start = auto_purge_before_start
 
         self._computer: Optional[Computer] = None
         self.computer_id: Optional[str] = None
@@ -89,7 +124,9 @@ class CelestoSandboxSession:
     def _install_signal_handlers(self) -> None:
         def _handle_signal(signum, frame):
             self.cleanup(interrupted=True)
-            raise KeyboardInterrupt(f"Interrupted by signal {signum}; sandbox {self.sandbox_name} deleted.")
+            raise KeyboardInterrupt(
+                f"Interrupted by signal {signum}; sandbox {self.sandbox_name} deleted."
+            )
 
         try:
             self._prev_sigint = signal.getsignal(signal.SIGINT)
@@ -110,10 +147,17 @@ class CelestoSandboxSession:
 
     def start(self) -> "CelestoSandboxSession":
         self._install_signal_handlers()
+        if self.provider == "cloud" and self.auto_purge_before_start:
+            purge_all_cloud_computers()
+
         self.created_ts = time.perf_counter()
         self._computer = Computer(provider=self.provider)
         self._computer.__enter__()
-        self.computer_id = getattr(self._computer, "computer_id", None) or getattr(self._computer, "id", None)
+        self.computer_id = (
+            getattr(self._computer, "computer_id", None)
+            or getattr(self._computer, "id", None)
+            or getattr(getattr(self._computer, "_provider", None), "computer_id", None)
+        )
         self._record_state("created")
 
         probe = self.run("echo ready", is_boot_probe=True)
@@ -137,7 +181,9 @@ class CelestoSandboxSession:
         )
 
         if decision == "block":
-            raise CommandBlockedError(command=command, reason=reason, category=category)
+            raise CommandBlockedError(
+                command=command, reason=reason, category=category
+            )
 
         if self._computer is None:
             raise RuntimeError("Sandbox computer is not started")
@@ -168,8 +214,32 @@ class CelestoSandboxSession:
             return
         try:
             if self._computer is not None:
-                self._computer.__exit__(None, None, None)
+                try:
+                    if hasattr(self._computer, "delete"):
+                        self._computer.delete()
+                except Exception:
+                    pass
+                try:
+                    self._computer.__exit__(None, None, None)
+                except Exception:
+                    pass
                 self._computer = None
+            if self.computer_id and self.provider == "cloud":
+                subprocess.run(
+                    [
+                        "celesto",
+                        "computer",
+                        "delete",
+                        self.computer_id,
+                        "--cloud",
+                        "--json",
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=20,
+                )
+            elif self.provider == "cloud" and self.auto_purge_before_start:
+                purge_all_cloud_computers()
         finally:
             self.ended_ts = time.perf_counter()
             if self.created_ts > 0:
@@ -185,7 +255,11 @@ class CelestoSandboxSession:
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
         try:
-            if exc_type is not None and self.state not in ("succeeded", "failed", "deleted"):
+            if exc_type is not None and self.state not in (
+                "succeeded",
+                "failed",
+                "deleted",
+            ):
                 self.mark_failed()
             elif exc_type is None and self.state == "running":
                 self.mark_succeeded()
