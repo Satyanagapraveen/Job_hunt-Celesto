@@ -1,0 +1,6 @@
+{
+  "who": "Final-year B.Tech Information Technology students and junior backend/AI software engineers hunting across dozens of company career portals that frequently change HTML layouts, vanish mid-application, or embed untrusted content.",
+  "agent_work": "Inside an isolated Celesto sandbox with persistent storage and pre-execution safety hooks, the agent ingests candidate profile criteria, scrapes and parses company job postings, detects genuine requirement changes versus cosmetic layout tweaks, scores skill gaps, blocks prompt-injected exfiltration commands, recovers from mid-batch Step 7 parser crashes, and reconciles an application tracker spreadsheet.",
+  "proof_output": "A verified applications_tracker.csv spreadsheet, a structured match_brief.md report with skill-gap scores and change diffs extracted from the guest VM, and a complete command audit log in logs/commands.jsonl.",
+  "idea_source": "idea_bank"
+}
