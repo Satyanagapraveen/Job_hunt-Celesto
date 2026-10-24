@@ -48,7 +48,7 @@ def generate_sandbox_name(prefix: str = "job") -> str:
 
 def purge_all_cloud_computers() -> list[str]:
     deleted_ids = []
-    for status_filter in (None, "stopped", "paused", "created", "error"):
+    for status_filter in (None, "stopped"):
         try:
             cmd = ["celesto", "computer", "list", "--cloud", "--json"]
             if status_filter:
@@ -75,7 +75,7 @@ def purge_all_cloud_computers() -> list[str]:
         except Exception:
             pass
     if deleted_ids:
-        time.sleep(2.0)
+        time.sleep(2.5)
     return deleted_ids
 
 
@@ -153,11 +153,9 @@ class CelestoSandboxSession:
 
     def start(self) -> "CelestoSandboxSession":
         self._install_signal_handlers()
-        if self.provider == "cloud" and self.auto_purge_before_start:
-            purge_all_cloud_computers()
 
         last_err = None
-        for attempt in range(1, 4):
+        for attempt in range(1, 6):
             try:
                 self.created_ts = time.perf_counter()
                 self._computer = Computer(provider=self.provider)
@@ -175,12 +173,21 @@ class CelestoSandboxSession:
             except Exception as exc:
                 last_err = exc
                 self._computer = None
+                msg = str(exc)
                 if self.provider == "cloud":
-                    time.sleep(2.5 * attempt)
+                    if not self.auto_purge_before_start and "429" in msg:
+                        break
+                    if "limiting requests" in msg:
+                        time.sleep(15.0 * attempt)
+                    else:
+                        time.sleep(3.0 * attempt)
                     if self.auto_purge_before_start:
                         purge_all_cloud_computers()
         else:
-            raise RuntimeError(f"Failed to start Celesto computer after 3 attempts: {last_err}")
+            raise RuntimeError(f"Failed to start Celesto computer after retries: {last_err}")
+
+        if self._computer is None:
+            raise RuntimeError(f"Failed to start Celesto computer: {last_err}")
 
         self._record_state("created")
 
@@ -201,10 +208,10 @@ class CelestoSandboxSession:
             except Exception as exc:
                 last_exc = exc
                 msg = str(exc)
-                if "409" in msg or "Conflict" in msg or "ConnectError" in msg:
-                    time.sleep(2.0 * attempt)
+                if "409" in msg or "Conflict" in msg or "ConnectError" in msg or "429" in msg:
+                    time.sleep(3.0 * attempt)
                     try:
-                        if self.computer_id and self.provider == "cloud":
+                        if self.computer_id and self.provider == "cloud" and "409" in msg:
                             subprocess.run(
                                 ["celesto", "computer", "start", self.computer_id, "--cloud", "--json"],
                                 capture_output=True,
@@ -279,18 +286,21 @@ class CelestoSandboxSession:
         if self.cleaned_up:
             return
         try:
+            deleted_ok = False
             if self._computer is not None:
                 try:
                     if hasattr(self._computer, "delete"):
                         self._computer.delete()
+                        deleted_ok = True
                 except Exception:
                     pass
                 try:
                     self._computer.__exit__(None, None, None)
+                    deleted_ok = True
                 except Exception:
                     pass
                 self._computer = None
-            if self.computer_id and self.provider == "cloud":
+            if not deleted_ok and self.computer_id and self.provider == "cloud":
                 subprocess.run(
                     [
                         "celesto",
@@ -304,9 +314,6 @@ class CelestoSandboxSession:
                     text=True,
                     timeout=25,
                 )
-                time.sleep(1.5)
-            if self.provider == "cloud" and self.auto_purge_before_start:
-                purge_all_cloud_computers()
         finally:
             self.ended_ts = time.perf_counter()
             if self.created_ts > 0:

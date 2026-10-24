@@ -1,0 +1,26 @@
+{
+  "name": "Praveen Namburi",
+  "education": "B.Tech in Information Technology (Final Year)",
+  "target_role": "Full-Stack, Backend & AI Engineer",
+  "skills": [
+    "python",
+    "fastapi",
+    "django",
+    "postgresql",
+    "redis",
+    "docker",
+    "react",
+    "typescript",
+    "linux",
+    "sql",
+    "llm_agents",
+    "pytest",
+    "git"
+  ],
+  "experience_years": 1,
+  "projects": [
+    "Cost-Optimized LLM Gateway (FastAPI, Redis Semantic Cache, LiteLLM)",
+    "Autonomous Multi-Agent Task Orchestrator (FastAPI, Celery, LangGraph, WebSockets)",
+    "Celesto Sandboxed Job Hunt Desk & Run Ledger (MicroVMs, Safety Hooks, PostgreSQL)"
+  ]
+}

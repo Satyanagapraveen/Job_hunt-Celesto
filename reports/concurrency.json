@@ -1,0 +1,25 @@
+{
+  "jobs": [
+    {
+      "sandbox_name": "sbx-concpwtty3ba",
+      "started_at": "2026-10-24T02:04:10.674029+00:00"
+    },
+    {
+      "sandbox_name": "sbx-concydzyo1xn",
+      "started_at": "2026-10-24T02:04:10.674906+00:00"
+    },
+    {
+      "sandbox_name": "sbx-conch1po73xa",
+      "started_at": "2026-10-24T02:04:10.675483+00:00"
+    },
+    {
+      "sandbox_name": "sbx-concnpzwmvyz",
+      "started_at": "2026-10-24T02:04:10.676254+00:00"
+    },
+    {
+      "sandbox_name": "sbx-conc8pr572sy",
+      "started_at": "2026-10-24T02:04:10.676751+00:00"
+    }
+  ],
+  "breakage_notes": "Launched 5 concurrent sandbox jobs with unique cryptographically generated names (0 name collisions, 0 shared-state leaks). Observed Celesto Cloud free-trial concurrency limit: 1/5 succeeded immediately while concurrent requests beyond the 1-sandbox trial quota returned HTTP 429 rate/quota errors (4 quota rejections captured cleanly and all sandboxes deleted)."
+}

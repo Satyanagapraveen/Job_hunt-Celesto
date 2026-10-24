@@ -1,0 +1,7 @@
+{
+  "failed_step": 7,
+  "total_steps": 10,
+  "policy": "resume",
+  "rationale": "When Step 7 of 10 (batch job description detail parsing) fails due to a malformed career portal DOM schema, the agent transitions to MidTaskFailure and applies the 'resume' policy rather than 'fresh' or 'rollback'. Because Steps 1 through 6 write atomic, hash-verified intermediate files (baseline_jobs.psv, current_jobs.psv, diffed_jobs.psv, and checkpoint.json) onto the isolated guest disk, a parser failure at Step 7 does not corrupt prior workspace state. Resuming from the Step 6 checkpoint on the same Celesto sandbox preserves all completed scraping and semantic diffing work, avoids paying a second 10-to-30-second microVM cold-boot penalty, and guarantees idempotent completion of Steps 7 through 10 before deterministic cleanup to the Deleted state.",
+  "trace_path": "reports/failure_trace.jsonl"
+}

@@ -1,0 +1,15 @@
+{"ts": "2026-10-24T02:00:59.365384+00:00", "event": "sandbox_ready", "sandbox_name": "sbx-jobfs18789j", "state": "Ready", "boot_to_ready_s": 12.3799}
+{"ts": "2026-10-24T02:01:02.717081+00:00", "event": "step_succeeded", "sandbox_name": "sbx-jobfs18789j", "step": 1, "total_steps": 10, "detail": "workspace_initialized"}
+{"ts": "2026-10-24T02:01:05.310691+00:00", "event": "step_succeeded", "sandbox_name": "sbx-jobfs18789j", "step": 2, "total_steps": 10, "detail": "candidate_profile_written"}
+{"ts": "2026-10-24T02:01:07.532427+00:00", "event": "step_succeeded", "sandbox_name": "sbx-jobfs18789j", "step": 3, "total_steps": 10, "detail": "baseline_snapshot_saved"}
+{"ts": "2026-10-24T02:01:09.999145+00:00", "event": "step_succeeded", "sandbox_name": "sbx-jobfs18789j", "step": 4, "total_steps": 10, "detail": "persistence_verified"}
+{"ts": "2026-10-24T02:01:12.035355+00:00", "event": "step_succeeded", "sandbox_name": "sbx-jobfs18789j", "step": 5, "total_steps": 10, "detail": "current_portal_listings_fetched"}
+{"ts": "2026-10-24T02:01:14.083787+00:00", "event": "step_succeeded", "sandbox_name": "sbx-jobfs18789j", "step": 6, "total_steps": 10, "detail": "semantic_diff_completed"}
+{"ts": "2026-10-24T02:01:17.132467+00:00", "event": "step_failed", "sandbox_name": "sbx-jobfs18789j", "step": 7, "total_steps": 10, "state": "MidTaskFailure", "error": "MidTaskFailure at Step 7: malformed career portal DOM schema"}
+{"ts": "2026-10-24T02:01:19.551706+00:00", "event": "policy_applied", "sandbox_name": "sbx-jobfs18789j", "policy": "resume", "state": "Resumed", "failed_step": 7, "total_steps": 10, "checkpoint_verified": "{\"step\": 6, \"status\": \"ready_for_step_7\"}"}
+{"ts": "2026-10-24T02:01:22.271021+00:00", "event": "step_recovered", "sandbox_name": "sbx-jobfs18789j", "step": 7, "total_steps": 10, "detail": "batch_details_parsed"}
+{"ts": "2026-10-24T02:01:24.756612+00:00", "event": "step_succeeded", "sandbox_name": "sbx-jobfs18789j", "step": 8, "total_steps": 10, "detail": "skill_gaps_scored"}
+{"ts": "2026-10-24T02:01:27.187117+00:00", "event": "step_succeeded", "sandbox_name": "sbx-jobfs18789j", "step": 9, "total_steps": 10, "detail": "spreadsheet_reconciled"}
+{"ts": "2026-10-24T02:01:29.953506+00:00", "event": "step_succeeded", "sandbox_name": "sbx-jobfs18789j", "step": 10, "total_steps": 10, "detail": "proof_verified"}
+{"ts": "2026-10-24T02:01:29.963916+00:00", "event": "run_succeeded", "sandbox_name": "sbx-jobfs18789j", "state": "Succeeded"}
+{"ts": "2026-10-24T02:01:44.416799+00:00", "event": "sandbox_deleted", "sandbox_name": "sbx-jobfs18789j", "state": "Deleted", "wall_clock_s": 57.4493}
