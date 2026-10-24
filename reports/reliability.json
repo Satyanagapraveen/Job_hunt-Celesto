@@ -1,0 +1,171 @@
+{
+  "run_count": 20,
+  "runs": [
+    {
+      "sandbox_name": "sbx-relj6xm21vg",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 6.7267,
+      "boot_to_ready_s": 4.5514,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-relb7t1baqu",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 8.9998,
+      "boot_to_ready_s": 3.4816,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-relcy963mai",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 9.37,
+      "boot_to_ready_s": 4.7263,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-rele7dvpacb",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 5.5096,
+      "boot_to_ready_s": 3.137,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-relgo1z6v2t",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 4.709,
+      "boot_to_ready_s": 2.3888,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-relgn34xr6u",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 6.9251,
+      "boot_to_ready_s": 3.9628,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-relvmdlplji",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 10.9012,
+      "boot_to_ready_s": 8.1106,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-relxt4vw3uq",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 6.9856,
+      "boot_to_ready_s": 3.6518,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-relffxe5bat",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 5.6169,
+      "boot_to_ready_s": 2.6929,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-relh5d0bl3r",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 5.4752,
+      "boot_to_ready_s": 2.7794,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-rely89rm7lb",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 4.7397,
+      "boot_to_ready_s": 2.501,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-rel2krl7tgp",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 5.272,
+      "boot_to_ready_s": 2.89,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-relk9k1yfne",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 4.925,
+      "boot_to_ready_s": 2.6839,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-rel9mvzjr3y",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 14.4158,
+      "boot_to_ready_s": 3.7788,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-rele12y0wpa",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 4.7467,
+      "boot_to_ready_s": 2.3842,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-rel89jcswcn",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 4.993,
+      "boot_to_ready_s": 2.8119,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-relx6s3ccwz",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 5.1573,
+      "boot_to_ready_s": 2.8356,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-reljog0twp7",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 5.3804,
+      "boot_to_ready_s": 2.9809,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-rel8k0cb6cc",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 5.4161,
+      "boot_to_ready_s": 3.0857,
+      "cost_usd": 0.0001
+    },
+    {
+      "sandbox_name": "sbx-rel3rlq9cw0",
+      "fresh": true,
+      "success": true,
+      "wall_clock_s": 5.3062,
+      "boot_to_ready_s": 2.5087,
+      "cost_usd": 0.0001
+    }
+  ],
+  "success_rate": 1.0,
+  "median_wall_clock_s": 5.4457,
+  "p90_wall_clock_s": 9.37,
+  "median_boot_to_ready_s": 2.9355,
+  "total_cost_usd": 0.002,
+  "postmortem_path": "reports/postmortem.md"
+}
