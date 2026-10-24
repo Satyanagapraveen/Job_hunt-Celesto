@@ -1,0 +1,14 @@
+{
+  "capabilities": [
+    {
+      "id": "persistence",
+      "why": "The Job Hunt Desk agent stops and restarts the sandbox across scraping cycles so baseline job postings, SHA-256 digests, and step checkpoints survive on the guest disk without re-scraping from scratch.",
+      "evidence_path": "reports/evidence/applications_tracker.csv"
+    },
+    {
+      "id": "safety_hooks",
+      "why": "Untrusted career portals and job descriptions can contain indirect prompt-injection payloads or destructive shell commands; pre-execution Python safety callbacks inspect and block unsafe commands before they reach the guest VM.",
+      "evidence_path": "logs/commands.jsonl"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+job_id,company,title,change_status,match_score,matched_skills,missing_skills
+JOB-101,CelestoCloud,AI Infrastructure Engineer,COSMETIC_LAYOUT_TWEAK_IGNORED,100.0,python;docker;linux;fastapi,
+JOB-102,FinLedger,Junior Backend Engineer,REAL_REQUIREMENT_CHANGE,75.0,python;postgresql;sql,kubernetes
+JOB-103,AgentWorks,LLM Tooling Engineer,NEW_LISTING,100.0,python;fastapi;llm_agents;docker,

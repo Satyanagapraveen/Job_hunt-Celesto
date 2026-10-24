@@ -48,28 +48,34 @@ def generate_sandbox_name(prefix: str = "job") -> str:
 
 def purge_all_cloud_computers() -> list[str]:
     deleted_ids = []
-    try:
-        res = subprocess.run(
-            ["celesto", "computer", "list", "--cloud", "--all", "--json"],
-            capture_output=True,
-            text=True,
-            timeout=20,
-        )
-        if res.stdout:
-            data = json.loads(res.stdout)
-            computers = data.get("data", {}).get("computers", [])
-            for comp in computers:
-                cid = comp.get("computer_id")
-                if cid:
-                    subprocess.run(
-                        ["celesto", "computer", "delete", cid, "--cloud", "--json"],
-                        capture_output=True,
-                        text=True,
-                        timeout=20,
-                    )
-                    deleted_ids.append(cid)
-    except Exception:
-        pass
+    for status_filter in (None, "stopped", "paused", "created", "error"):
+        try:
+            cmd = ["celesto", "computer", "list", "--cloud", "--json"]
+            if status_filter:
+                cmd.extend(["--status", status_filter])
+            res = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=25,
+            )
+            if res.stdout:
+                data = json.loads(res.stdout)
+                computers = data.get("data", {}).get("computers", [])
+                for comp in computers:
+                    cid = comp.get("computer_id")
+                    if cid and cid not in deleted_ids:
+                        subprocess.run(
+                            ["celesto", "computer", "delete", cid, "--cloud", "--json"],
+                            capture_output=True,
+                            text=True,
+                            timeout=25,
+                        )
+                        deleted_ids.append(cid)
+        except Exception:
+            pass
+    if deleted_ids:
+        time.sleep(2.0)
     return deleted_ids
 
 
@@ -150,14 +156,32 @@ class CelestoSandboxSession:
         if self.provider == "cloud" and self.auto_purge_before_start:
             purge_all_cloud_computers()
 
-        self.created_ts = time.perf_counter()
-        self._computer = Computer(provider=self.provider)
-        self._computer.__enter__()
-        self.computer_id = (
-            getattr(self._computer, "computer_id", None)
-            or getattr(self._computer, "id", None)
-            or getattr(getattr(self._computer, "_provider", None), "computer_id", None)
-        )
+        last_err = None
+        for attempt in range(1, 4):
+            try:
+                self.created_ts = time.perf_counter()
+                self._computer = Computer(provider=self.provider)
+                self._computer.__enter__()
+                self.computer_id = (
+                    getattr(self._computer, "computer_id", None)
+                    or getattr(self._computer, "id", None)
+                    or getattr(
+                        getattr(self._computer, "_provider", None),
+                        "computer_id",
+                        None,
+                    )
+                )
+                break
+            except Exception as exc:
+                last_err = exc
+                self._computer = None
+                if self.provider == "cloud":
+                    time.sleep(2.5 * attempt)
+                    if self.auto_purge_before_start:
+                        purge_all_cloud_computers()
+        else:
+            raise RuntimeError(f"Failed to start Celesto computer after 3 attempts: {last_err}")
+
         self._record_state("created")
 
         probe = self.run("echo ready", is_boot_probe=True)
@@ -168,6 +192,30 @@ class CelestoSandboxSession:
         self.boot_to_ready_s = round(self.ready_ts - self.created_ts, 4)
         self._record_state("ready")
         return self
+
+    def _exec_with_retry(self, command: str) -> object:
+        last_exc = None
+        for attempt in range(1, 7):
+            try:
+                return self._computer.run(command)
+            except Exception as exc:
+                last_exc = exc
+                msg = str(exc)
+                if "409" in msg or "Conflict" in msg or "ConnectError" in msg:
+                    time.sleep(2.0 * attempt)
+                    try:
+                        if self.computer_id and self.provider == "cloud":
+                            subprocess.run(
+                                ["celesto", "computer", "start", self.computer_id, "--cloud", "--json"],
+                                capture_output=True,
+                                text=True,
+                                timeout=20,
+                            )
+                    except Exception:
+                        pass
+                    continue
+                raise
+        raise last_exc
 
     def run(self, command: str, is_boot_probe: bool = False) -> CommandResult:
         if not is_boot_probe and self.state == "ready":
@@ -188,7 +236,7 @@ class CelestoSandboxSession:
         if self._computer is None:
             raise RuntimeError("Sandbox computer is not started")
 
-        raw = self._computer.run(command)
+        raw = self._exec_with_retry(command)
         return CommandResult(
             exit_code=int(getattr(raw, "exit_code", 0)),
             stdout=str(getattr(raw, "stdout", "")),
@@ -196,12 +244,30 @@ class CelestoSandboxSession:
         )
 
     def stop_persistent(self) -> None:
-        if self._computer is not None and hasattr(self._computer, "stop"):
+        if self.computer_id and self.provider == "cloud":
+            subprocess.run(
+                ["celesto", "computer", "stop", self.computer_id, "--cloud", "--json"],
+                capture_output=True,
+                text=True,
+                timeout=25,
+            )
+            time.sleep(2.0)
+        elif self._computer is not None and hasattr(self._computer, "stop"):
             self._computer.stop()
+            time.sleep(2.0)
 
     def start_persistent(self) -> None:
-        if self._computer is not None and hasattr(self._computer, "start"):
+        if self.computer_id and self.provider == "cloud":
+            subprocess.run(
+                ["celesto", "computer", "start", self.computer_id, "--cloud", "--json"],
+                capture_output=True,
+                text=True,
+                timeout=25,
+            )
+            time.sleep(3.0)
+        elif self._computer is not None and hasattr(self._computer, "start"):
             self._computer.start()
+            time.sleep(3.0)
 
     def mark_succeeded(self) -> None:
         self._record_state("succeeded")
@@ -236,9 +302,10 @@ class CelestoSandboxSession:
                     ],
                     capture_output=True,
                     text=True,
-                    timeout=20,
+                    timeout=25,
                 )
-            elif self.provider == "cloud" and self.auto_purge_before_start:
+                time.sleep(1.5)
+            if self.provider == "cloud" and self.auto_purge_before_start:
                 purge_all_cloud_computers()
         finally:
             self.ended_ts = time.perf_counter()

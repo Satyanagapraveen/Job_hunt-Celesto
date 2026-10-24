@@ -55,6 +55,10 @@ def call_llm_match_summary(role_title: str, company: str, matched: list[str], mi
     )
 
 
+def _ckpt(step: int, status: str = "ok") -> str:
+    return shlex.quote(json.dumps({"step": step, "status": status}))
+
+
 def execute_job_hunt_step(
     sbx: CelestoSandboxSession,
     step: int,
@@ -64,7 +68,7 @@ def execute_job_hunt_step(
     ws = "/tmp/job_hunt_workspace"
 
     if step == 1:
-        cmd = f"mkdir -p {ws} && printf '%s\\n' '{{\"step\":1,\"status\":\"initialized\"}}' > {ws}/checkpoint.json"
+        cmd = f"mkdir -p {ws} && printf '%s\\n' {_ckpt(1, 'initialized')} > {ws}/checkpoint.json"
         res = sbx.run(cmd)
         if not res.ok:
             raise RuntimeError(f"Step 1 failed: {res.stderr}")
@@ -79,7 +83,7 @@ def execute_job_hunt_step(
                 "experience_years": 1,
             }
         )
-        cmd = f"printf '%s\\n' {shlex.quote(profile_json)} > {ws}/candidate_profile.json && printf '%s\\n' '{"step":2}' > {ws}/checkpoint.json"
+        cmd = f"printf '%s\\n' {shlex.quote(profile_json)} > {ws}/candidate_profile.json && printf '%s\\n' {_ckpt(2)} > {ws}/checkpoint.json"
         res = sbx.run(cmd)
         if not res.ok:
             raise RuntimeError(f"Step 2 failed: {res.stderr}")
@@ -92,7 +96,7 @@ def execute_job_hunt_step(
                 "JOB-102|FinLedger|Junior Backend Engineer|section_legacy|python;postgresql;sql|1",
             ]
         )
-        cmd = f"printf '%s\\n' {shlex.quote(baseline_lines)} > {ws}/baseline_jobs.psv && printf '%s\\n' '{"step":3}' > {ws}/checkpoint.json"
+        cmd = f"printf '%s\\n' {shlex.quote(baseline_lines)} > {ws}/baseline_jobs.psv && printf '%s\\n' {_ckpt(3)} > {ws}/checkpoint.json"
         res = sbx.run(cmd)
         if not res.ok:
             raise RuntimeError(f"Step 3 failed: {res.stderr}")
@@ -102,7 +106,7 @@ def execute_job_hunt_step(
         if test_persistence:
             sbx.stop_persistent()
             sbx.start_persistent()
-        cmd = f"test -s {ws}/baseline_jobs.psv && sha256sum {ws}/baseline_jobs.psv > {ws}/baseline.sha256 && printf '%s\\n' '{"step":4}' > {ws}/checkpoint.json"
+        cmd = f"test -s {ws}/baseline_jobs.psv && sha256sum {ws}/baseline_jobs.psv > {ws}/baseline.sha256 && printf '%s\\n' {_ckpt(4, 'persisted')} > {ws}/checkpoint.json"
         res = sbx.run(cmd)
         if not res.ok:
             raise RuntimeError(f"Step 4 failed: {res.stderr}")
@@ -116,7 +120,7 @@ def execute_job_hunt_step(
                 "JOB-103|AgentWorks|LLM Tooling Engineer|article_modern|python;fastapi;llm_agents;docker|0",
             ]
         )
-        cmd = f"printf '%s\\n' {shlex.quote(current_lines)} > {ws}/current_jobs.psv && printf '%s\\n' '{"step":5}' > {ws}/checkpoint.json"
+        cmd = f"printf '%s\\n' {shlex.quote(current_lines)} > {ws}/current_jobs.psv && printf '%s\\n' {_ckpt(5)} > {ws}/checkpoint.json"
         res = sbx.run(cmd)
         if not res.ok:
             raise RuntimeError(f"Step 5 failed: {res.stderr}")
@@ -134,7 +138,7 @@ def execute_job_hunt_step(
             f"awk -F'|' '{{print $1, $5, $6}}' {ws}/baseline_jobs.psv > {ws}/base_sem.txt && "
             f"awk -F'|' '{{print $1, $5, $6}}' {ws}/current_jobs.psv > {ws}/curr_sem.txt && "
             f"printf '%s\\n' {shlex.quote(diff_lines)} > {ws}/diffed_jobs.psv && "
-            f"printf '%s\\n' '{{\"step\":6,\"checkpoint\":\"ready_for_step_7\"}}' > {ws}/checkpoint.json"
+            f"printf '%s\\n' {_ckpt(6, 'ready_for_step_7')} > {ws}/checkpoint.json"
         )
         res = sbx.run(cmd)
         if not res.ok:
@@ -149,7 +153,7 @@ def execute_job_hunt_step(
         cmd = (
             f"test -s {ws}/diffed_jobs.psv && "
             f"cp {ws}/diffed_jobs.psv {ws}/validated_jobs.psv && "
-            f"printf '%s\\n' '{{\"step\":7}}' > {ws}/checkpoint.json"
+            f"printf '%s\\n' {_ckpt(7)} > {ws}/checkpoint.json"
         )
         res = sbx.run(cmd)
         if not res.ok:
@@ -167,7 +171,7 @@ def execute_job_hunt_step(
         cmd = (
             f"test -s {ws}/validated_jobs.psv && "
             f"printf '%s\\n' {shlex.quote(scored_lines)} > {ws}/scored_jobs.csv && "
-            f"printf '%s\\n' '{{\"step\":8}}' > {ws}/checkpoint.json"
+            f"printf '%s\\n' {_ckpt(8)} > {ws}/checkpoint.json"
         )
         res = sbx.run(cmd)
         if not res.ok:
@@ -179,7 +183,7 @@ def execute_job_hunt_step(
         cmd = (
             f"printf '%s\\n' {shlex.quote(header)} > {ws}/applications_tracker.csv && "
             f"cat {ws}/scored_jobs.csv >> {ws}/applications_tracker.csv && "
-            f"printf '%s\\n' '{{\"step\":9}}' > {ws}/checkpoint.json"
+            f"printf '%s\\n' {_ckpt(9)} > {ws}/checkpoint.json"
         )
         res = sbx.run(cmd)
         if not res.ok:
@@ -206,7 +210,7 @@ def execute_job_hunt_step(
         )
         cmd = (
             f"printf '%s\\n' {shlex.quote(brief_md)} > {ws}/match_brief.md && "
-            f"printf '%s\\n' '{{\"step\":10,\"status\":\"completed\"}}' > {ws}/checkpoint.json && "
+            f"printf '%s\\n' {_ckpt(10, 'completed')} > {ws}/checkpoint.json && "
             f"test -s {ws}/applications_tracker.csv && "
             f"test -s {ws}/match_brief.md && "
             f"cat {ws}/applications_tracker.csv && "
