@@ -6,3 +6,6 @@ __pycache__/
 .DS_Store
 venv./
 test.py
+
+verify_phase3.2.py
+verify_phase4.2.py
